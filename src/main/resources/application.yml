@@ -1,0 +1,48 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/aptechka
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aptechkadb
+    username: myuser
+    password: mypassword
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  elasticsearch:
+    uris: http://localhost:9201
+    socket-timeout: 30s
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    sql-migration-prefix: V
+    sql-migration-separator: "__"
+    sql-migration-suffixes: .sql
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+keycloak:
+  auth-server-url: http://localhost:8080
+  realm: aptechka
+  client-id: confidential-client
+  client-secret: ZAfy18jAcVrMgSo8ReZ9uMmQ0tFqbTvA
+
+app:
+  keycloak:
+    token-url: "${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token"
+
+server:
+  port: 8082
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springdoc:               DEBUG
