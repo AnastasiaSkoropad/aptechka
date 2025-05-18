@@ -31,7 +31,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET,
-                                "/api/courses/**",
+                                "/api/drugs/**",
                                 "/api/categories/**",
                                 "/api/categories/*/directions**",
                                 "/api/directions/*/topics**",

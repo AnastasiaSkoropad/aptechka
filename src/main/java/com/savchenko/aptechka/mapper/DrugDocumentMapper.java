@@ -1,18 +1,39 @@
 package com.savchenko.aptechka.mapper;
 
 import com.savchenko.aptechka.entity.Drug;
-import com.savchenko.aptechka.entity.DrugDetails;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
 import com.savchenko.aptechka.entity.DrugDocument;
-import org.springframework.stereotype.Component;
+import com.savchenko.aptechka.dto.DrugDocumentDto;
+import org.mapstruct.MappingTarget;
+import org.springframework.data.elasticsearch.core.suggest.Completion;
 
-@Component
-public class DrugDocumentMapper {
-    public DrugDocument toDocument(Drug drug, DrugDetails details) {
-        var doc = new DrugDocument();
-        doc.setId(drug.getId());
-        doc.setTradeName(drug.getTradeName());
-        doc.setInternationalName(drug.getInternationalName());
-        doc.setComposition(drug.getComposition());
-        return doc;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Mapper(componentModel = "spring")
+public interface DrugDocumentMapper {
+    DrugDocumentDto toDto(DrugDocument document);
+    DrugDocument toDocument(Drug drug);
+
+    @AfterMapping
+    default void populateSuggest(@MappingTarget DrugDocument doc, Drug src) {
+        List<String> inputs = new ArrayList<>();
+
+        // повна назва
+        inputs.add(src.getTradeName());
+        // міжнародна назва
+        if (src.getInternationalName() != null) {
+            inputs.add(src.getInternationalName());
+        }
+        // кожне «слово» та частини після дефісів
+        Arrays.stream(src.getTradeName().split("[\\s\\-]+"))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .forEach(inputs::add);
+
+        doc.setSuggest(new Completion(inputs.toArray(String[]::new)));
     }
+
 }
