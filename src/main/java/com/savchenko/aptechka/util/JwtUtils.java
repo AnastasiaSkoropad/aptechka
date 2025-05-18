@@ -2,6 +2,7 @@ package com.savchenko.aptechka.util;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -68,5 +69,9 @@ public final class JwtUtils {
     public static Optional<Date> getExpiration(String token) {
         return parseClaims(token)
                 .map(JWTClaimsSet::getExpirationTime);
+    }
+
+    public static Optional<String> getSubject(Jwt jwt) {
+        return Optional.ofNullable(jwt).map(Jwt::getSubject);
     }
 }
