@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 public class CabinetDrugCreateReq {
@@ -19,4 +20,6 @@ public class CabinetDrugCreateReq {
     private String note;
     private String photoUrl;
     private String instructionUrl;
+    BigDecimal quantity;
+    LocalDate expiryDate;
 }

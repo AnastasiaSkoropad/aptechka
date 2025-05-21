@@ -1,18 +1,12 @@
 package com.savchenko.aptechka.service;
 
-import com.savchenko.aptechka.dto.BatchCreateReq;
-import com.savchenko.aptechka.dto.BatchDto;
 import com.savchenko.aptechka.dto.CabinetDrugCreateReq;
 import com.savchenko.aptechka.dto.CabinetDrugDto;
 import com.savchenko.aptechka.dto.CabinetDrugUpdateReq;
-import com.savchenko.aptechka.dto.QuantityAdjustReq;
-import com.savchenko.aptechka.entity.Batch;
 import com.savchenko.aptechka.entity.Cabinet;
 import com.savchenko.aptechka.entity.CabinetDrug;
 import com.savchenko.aptechka.exception.ResourceNotFoundException;
-import com.savchenko.aptechka.mapper.BatchMapper;
 import com.savchenko.aptechka.mapper.CabinetDrugMapper;
-import com.savchenko.aptechka.repository.BatchRepository;
 import com.savchenko.aptechka.repository.CabinetDrugRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,10 +23,8 @@ import java.util.UUID;
 public class CabinetDrugService {
 
     private final CabinetDrugRepository drugRepo;
-    private final BatchRepository batchRepo;
-    private final CabinetService        cabinetService;
+    private final CabinetService cabinetService;
     private final CabinetDrugMapper drugMapper;
-    private final BatchMapper batchMapper;
 
     /* ---------- CRUD препарату ---------- */
     @Transactional
@@ -52,69 +44,47 @@ public class CabinetDrugService {
                 .instructionUrl(req.getInstructionUrl())
                 .unit(req.getUnit())
                 .minQuantity(req.getMinQuantity())
+                .quantity(req.getQuantity())
+                .expiryDate(req.getExpiryDate())
                 .build();
 
         return drugMapper.toDto(drugRepo.save(drug));
     }
 
     @Transactional
-    public CabinetDrugDto updateDrug(String drugId,
-                                     Long   userId,
-                                     CabinetDrugUpdateReq req) {
-
+    public CabinetDrugDto updateDrug(String drugId, Long userId, CabinetDrugUpdateReq req) {
         CabinetDrug drug = findDrugForUser(drugId, userId);
 
-        Optional.ofNullable(req.getName())          .ifPresent(drug::setName);
-        Optional.ofNullable(req.getDescription())   .ifPresent(drug::setDescription);
-        Optional.ofNullable(req.getNote())          .ifPresent(drug::setNote);
-        Optional.ofNullable(req.getPhotoUrl())      .ifPresent(drug::setPhotoUrl);
+        Optional.ofNullable(req.getName()).ifPresent(drug::setName);
+        Optional.ofNullable(req.getDescription()).ifPresent(drug::setDescription);
+        Optional.ofNullable(req.getNote()).ifPresent(drug::setNote);
+        Optional.ofNullable(req.getPhotoUrl()).ifPresent(drug::setPhotoUrl);
         Optional.ofNullable(req.getInstructionUrl()).ifPresent(drug::setInstructionUrl);
-        Optional.ofNullable(req.getUnit())          .ifPresent(drug::setUnit);
-        Optional.ofNullable(req.getMinQuantity())   .ifPresent(drug::setMinQuantity);
+        Optional.ofNullable(req.getUnit()).ifPresent(drug::setUnit);
+        Optional.ofNullable(req.getMinQuantity()).ifPresent(drug::setMinQuantity);
+        Optional.ofNullable(req.getQuantity()).ifPresent(drug::setQuantity);
+        Optional.ofNullable(req.getExpiryDate()).ifPresent(drug::setExpiryDate);
 
         return drugMapper.toDto(drug);
     }
 
     @Transactional
+    public CabinetDrugDto adjustDose(String drugId, Long userId, BigDecimal amount) {
+        CabinetDrug drug = findDrugForUser(drugId, userId);
+
+        BigDecimal result = drug.getQuantity().subtract(amount);
+        if (result.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Кількість не може бути від’ємною");
+        }
+        drug.setQuantity(result);
+        return drugMapper.toDto(drug);
+    }
+
+
+    @Transactional
     public void deleteDrug(String drugId, Long userId) {
         CabinetDrug drug = findDrugForUser(drugId, userId);
         drugRepo.delete(drug);
-    }
-
-    /* ---------- Партії ---------- */
-    @Transactional
-    public BatchDto addBatch(String drugId, Long userId, BatchCreateReq req) {
-
-        CabinetDrug drug = findDrugForUser(drugId, userId);
-
-        Batch batch = Batch.builder()
-                .id(UUID.randomUUID().toString())
-                .cabinetDrug(drug)
-                .quantity(req.getQuantity())
-                .expiryDate(req.getExpiryDate())
-                .build();
-
-        return batchMapper.toDto(batchRepo.save(batch));
-    }
-
-    /** Списати кількість із конкретної партії */
-    @Transactional
-    public BatchDto adjustQuantity(String batchId,
-                                   Long   userId,
-                                   QuantityAdjustReq req) {
-
-        Batch batch = batchRepo.findById(batchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Batch not found: " + batchId));
-
-        CabinetDrug drug = batch.getCabinetDrug();
-        cabinetService.getCabinetForUser(drug.getCabinet().getId(), userId); // ⬅ перевірка доступу
-
-        BigDecimal result = batch.getQuantity().subtract(req.getAmount());
-        if (result.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Resulting quantity would be negative");
-        }
-        batch.setQuantity(result);
-        return batchMapper.toDto(batch);
     }
 
     /* ---------- Пошук ---------- */

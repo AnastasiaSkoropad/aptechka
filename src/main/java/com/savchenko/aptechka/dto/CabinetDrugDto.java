@@ -5,6 +5,7 @@ import lombok.Value;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -19,5 +20,7 @@ public class CabinetDrugDto {
     MeasurementUnit unit;
     BigDecimal minQuantity;
     BigDecimal     totalQuantity;
+    BigDecimal     quantity;       // нове
+    LocalDate expiryDate;
     Instant createdAt;
 }

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 public class CabinetDrugUpdateReq {
@@ -15,4 +16,6 @@ public class CabinetDrugUpdateReq {
     private MeasurementUnit  unit;
     @PositiveOrZero
     private BigDecimal minQuantity;
+    BigDecimal quantity;
+    LocalDate expiryDate;
 }
