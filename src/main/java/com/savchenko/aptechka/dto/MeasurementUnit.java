@@ -6,5 +6,10 @@ public enum MeasurementUnit {
     AMPULE,
     ML,
     BOTTLE,
-    PIECE
+    PIECE;
+
+    public String getDisplayName() {
+        String lower = name().toLowerCase();
+        return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+    }
 }

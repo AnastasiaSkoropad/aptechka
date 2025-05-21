@@ -54,4 +54,10 @@ public class CabinetService {
         }
         return cabinet;
     }
+
+    @Transactional
+    public void deleteCabinet(Long cabinetId, Long userId) {
+        Cabinet cabinet = getCabinetForUser(cabinetId, userId);
+        cabinetRepo.delete(cabinet);
+    }
 }
