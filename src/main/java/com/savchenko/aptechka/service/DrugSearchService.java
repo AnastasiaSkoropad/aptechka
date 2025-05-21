@@ -5,7 +5,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Suggestion;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
-import co.elastic.clients.elasticsearch._types.SortOrder;
 import com.savchenko.aptechka.dto.DrugDocumentDto;
 import com.savchenko.aptechka.dto.SuggestionDto;
 import com.savchenko.aptechka.entity.DrugDocument;
@@ -48,9 +47,6 @@ public class DrugSearchService{
             String sortField,
             String sortOrder
     ) {
-        String esSortField = sortField.endsWith(".keyword")
-                ? sortField
-                : sortField + ".keyword";
 
         SearchResponse<DrugDocument> resp;
         try {
@@ -58,13 +54,6 @@ public class DrugSearchService{
                             .index("drugs")
                             .from(page * size)        // int → Integer, помилки більше не буде
                             .size(size)
-                            .sort(s -> s
-                                    .field(f -> f
-                                            .field(esSortField)
-                                            .order("asc".equalsIgnoreCase(sortOrder)
-                                                    ? SortOrder.Asc : SortOrder.Desc)
-                                    )
-                            )
                             .query(q -> q
                                     .multiMatch(mm -> mm
                                             .query(query)
