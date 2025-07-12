@@ -51,6 +51,16 @@ public class CabinetDrugService {
         return drugMapper.toDto(drugRepo.save(drug));
     }
 
+    @Transactional(readOnly = true)
+    public CabinetDrugDto getDrug(Long cabinetId, Long userId, String drugId) {
+        CabinetDrug drug = findDrugForUser(drugId, userId);
+        if (!drug.getCabinet().getId().equals(cabinetId)) {
+            throw new ResourceNotFoundException(
+                    String.format("Препарат %s не знайдено в аптечці %d", drugId, cabinetId));
+        }
+        return drugMapper.toDto(drug);
+    }
+
     @Transactional
     public CabinetDrugDto updateDrug(String drugId, Long userId, CabinetDrugUpdateReq req) {
         CabinetDrug drug = findDrugForUser(drugId, userId);
